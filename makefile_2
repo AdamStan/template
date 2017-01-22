@@ -1,0 +1,7 @@
+testbook.out: testmap_book.cpp map_template.h book.h
+	g++ -g -Wall -pedantic $^ -o $@
+
+.PHONY: clean
+
+clean:
+	-rm testmap.out
