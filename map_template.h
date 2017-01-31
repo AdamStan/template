@@ -12,7 +12,6 @@ template<typename key, class example> class map_template
     key *keys;
     unsigned int size;
 public:
-    class index_out_of_range{};
     map_template ()
     {
         size = 0;
@@ -23,10 +22,11 @@ public:
             keys = new key[1];
             keys[size] = key();
         }
-	catch(...)
-	{
-            delete [] data;
-	}
+		catch(...)
+		{
+				delete [] data;
+				throw;
+		}
     }
     ~map_template ()
     {
@@ -36,7 +36,15 @@ public:
     map_template (const map_template<key,example> & s)
     {
         data = new example[s.size];
-        keys = new key[s.size];
+		try
+		{
+			keys = new key[s.size];
+		}
+		catch(...)
+		{
+			delete [] data;
+			throw;
+		}
         size = s.size;
         for (unsigned i = 0; i < size; i++)
         {
@@ -49,7 +57,15 @@ public:
         if (this == &s)
             return *this;
         example* ndata = new example[s.size];
-        key* nkeys = new key[s.size];
+		key* nkeys;
+		try
+		{
+			nkeys = new key[s.size];
+		}
+		catch(...)
+		{
+			delete [] ndata;
+		}
         for(unsigned int i = 0; i<s.size;i++)
         {
             ndata[i] = s.data[i];
@@ -69,19 +85,18 @@ public:
     {
         for (unsigned i = 0; i < v.size;i++)
         {
-           //if (v.keys[i] == 0) break;
             o <<"key: "<< v.keys[i] <<endl;
             o << v.data[i]<<endl;
         }
         return o;
     }
-    map_template<key,example> Add(key addkey, example addend)
+    map_template<key,example> Add(const key& addkey, const example& addend)
     {
         if(size == 0)
         {
             data[0] = addend;
             keys[0] = addkey;
-            size +=1;
+            size += 1;
             return *this;
         }
         else 
@@ -90,30 +105,43 @@ public:
             example* newdata;
             newdata = new example[size];
             key* newkeys;
-            newkeys = new key[size];
-            
-            for(unsigned i =0; i<size-1;i++)
-            {
-                newdata[i] = data[i];
-                newkeys[i] = keys[i];
-            }
+			try
+			{
+				newkeys = new key[size];
+			}
+			catch(...)
+			{
+				delete [] newdata;
+				throw;
+			}
+            try
+			{
+				for(unsigned i =0; i<size-1;i++)
+				{
+					newdata[i] = data[i];
+					newkeys[i] = keys[i];
+				}
+				newdata[size-1] = addend;
+				newkeys[size-1] = addkey;
+			}
+			catch(...)
+			{
+				delete [] newdata;
+				delete [] newkeys;
+				throw;
+			}
             delete[] data; delete[] keys;
             data = newdata; keys = newkeys;
-            data[size-1] = addend; 
-            keys[size-1] = addkey;
             return *this;
         }
     }
-    example* Find(key finding) //ponoć tak to ma być
+    example* Find(key finding)
     {
-        unsigned int i = 0;
-        for( ; i<size; i++)
-            if (finding == keys[i])
-            {
-                break;
-            }
-        if(i == size) i=0;
-        return &data[i];
+        for(unsigned i = 0; i<size; i++)
+            if (finding == keys[i]) 
+				return &data[i];
+			
+		return NULL;
     }
 };
 #endif /* _TEMPLATE_H_ */
