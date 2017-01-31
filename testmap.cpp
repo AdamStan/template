@@ -32,6 +32,11 @@ int main(void)
             Database = NewDatabase;						//Update original database
             
             cout << "Database po tym wszystkim \n" << Database << endl;						//Print original databese
+            
+            Employee *pN;
+			pN = NewDatabase.Find(123456789);
+			if(pN)
+				cout << *pN << endl;
 	}
 	catch(bad_alloc)
 	{
